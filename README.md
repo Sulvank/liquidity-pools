@@ -1,40 +1,40 @@
-# 🔄 SwapApp - Token-to-Token Swap via Uniswap V2
+# 🔄 SwapApp - Token Swap and Liquidity Management
 
-**SwapApp** is a minimal Solidity smart contract built with Foundry that enables users to perform token-to-token swaps using the Uniswap V2 Router. It handles user input safely with `SafeERC20`, supports custom swap paths, and emits detailed events after each swap.
+**SwapApp** is a Solidity smart contract built with Foundry that integrates with Uniswap V2 to enable token swaps, liquidity provision, and liquidity removal. The project includes a complete testing suite for all core functionalities.
 
 > **Note**
-> This contract delegates the swap execution to a trusted Uniswap V2 Router and requires proper token approval before executing swaps.
+> This contract uses OpenZeppelin's `SafeERC20` library and Uniswap V2 Router & Factory interfaces for secure and reliable token handling.
 
 ---
 
 ## 🔹 Key Features
 
-* ✅ Swap between any two ERC20 tokens using Uniswap V2.
-* ✅ Safe token transfer and approval via `SafeERC20`.
-* ✅ Customizable path and deadline for each swap.
-* ✅ Emits event logging the input/output tokens and amounts.
-* ✅ Lightweight, extensible, and focused on core functionality.
+* ✅ **Token Swap** – Swap between ERC20 tokens using Uniswap V2.
+* ✅ **Add Liquidity** – Provide liquidity to Uniswap pools by supplying token pairs.
+* ✅ **Remove Liquidity** – Withdraw liquidity from Uniswap pools and receive underlying tokens.
+* ✅ **Factory & Pair Retrieval** – Use Uniswap Factory to get token pair addresses dynamically.
+* ✅ **Full Test Coverage** – Includes Foundry tests for swaps, liquidity addition, and removal.
 
 ---
 
-## 📄 Deployed Contract
+## 📄 Contract Overview
 
-| 🔧 Item                    | 📋 Description                            |
-| -------------------------- | ----------------------------------------- |
-| **Contract Name**          | `SwapApp`                                 |
-| **Deployed Network**       | (Add your deployment network here)        |
-| **Contract Address**       | (Add your deployed address if applicable) |
-| **Constructor Parameters** | `address V2Router02_` (Uniswap V2 Router) |
+| Item                | Description                                           |
+| ------------------- | ----------------------------------------------------- |
+| **Contract Name**   | `SwapApp`                                             |
+| **Dependencies**    | OpenZeppelin `SafeERC20`, Uniswap V2 Router & Factory |
+| **Functions**       | `swapTokens`, `addLiquidity`, `removeLiquidity`       |
+| **Networks Tested** | Arbitrum Mainnet (via fork)                           |
 
 ---
 
 ## 🚀 How to Use Locally
 
-### 1️⃣ Clone and Set Up
+### 1️⃣ Clone and Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/swapapp.git
-cd swapapp
+git clone <your-repo-url>
+cd <your-project-folder>
 ```
 
 ### 2️⃣ Install Foundry
@@ -44,23 +44,13 @@ curl -L https://foundry.paradigm.xyz | bash
 foundryup
 ```
 
-### 3️⃣ Compile the Contract
+### 3️⃣ Run Tests
 
 ```bash
-forge build
+forge test --fork-url https://arb1.arbitrum.io/rpc
 ```
 
-### 4️⃣ Deploy the Contract
-
-Replace the Uniswap V2 Router address in your script and run:
-
-```bash
-forge script script/Deploy.s.sol \
-  --rpc-url <your_rpc_url> \
-  --broadcast --verify
-```
-
-> Make sure tokens involved are approved before calling `swapTokens`.
+> The tests use mainnet forking on Arbitrum to execute real Uniswap swaps and liquidity operations.
 
 ---
 
@@ -68,64 +58,44 @@ forge script script/Deploy.s.sol \
 
 ```
 swapapp/
-├── lib/                             # OpenZeppelin libraries
-│   └── openzeppelin-contracts/      # ERC20, SafeERC20, etc.
-├── script/
-│   └── Deploy.s.sol                 # Deployment script (to be created)
+├── lib/                              # External dependencies (OpenZeppelin, Uniswap)
+├── script/                           # Deployment scripts
 ├── src/
-│   ├── SwapApp.sol                  # Main swap contract
-│   └── interfaces/
-│       └── IV2Router02.sol          # Interface for Uniswap V2 router
-├── test/                            # Test folder (to be added)
-├── foundry.toml                     # Foundry config
-└── README.md                        # This file
+│   └── SwapApp.sol                   # Main contract implementation
+├── test/
+│   └── SwapApp.t.sol                  # Unit tests for swap, addLiquidity, removeLiquidity
+├── foundry.toml                       # Foundry configuration
+└── README.md                          # Project documentation
 ```
 
 ---
 
-## 🔍 Contract Summary
+## 🔍 Contract Functions
 
-### `SwapApp.sol`
+| Function                                                                                                                               | Description                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `swapTokens(uint256 amountIn_, uint256 amountOutMin_, address[] path_, address to_, uint256 deadline_)`                                | Swaps tokens via Uniswap V2 Router.                                     |
+| `addLiquidity(uint256 amountIn_, uint256 amountOutMin_, address[] path_, uint256 amountAMin_, uint256 amountBMin_, uint256 deadline_)` | Swaps half of input tokens and provides liquidity to the USDT/DAI pool. |
+| `removeLiquidity(uint256 liquidityAmount_, uint256 amountAMin_, uint256 amountBMin_, address to_, uint256 deadline_)`                  | Removes liquidity from the pool and sends tokens to the user.           |
 
-| Function                           | Description                                                     |
-| ---------------------------------- | --------------------------------------------------------------- |
-| `constructor(address V2Router02_)` | Initializes the contract with the address of Uniswap V2 Router. |
-| `swapTokens(...)`                  | Executes a token-to-token swap through the provided path.       |
+---
 
-### Event
+## 🛠️ Potential Improvements
 
-| Event        | Description                                             |
-| ------------ | ------------------------------------------------------- |
-| `SwapTokens` | Emitted after a successful swap (in/out token & amount) |
+* 🔐 Add access controls for certain functions.
+* 💰 Support for fee-on-transfer tokens.
+* 🌐 Make token addresses configurable post-deployment.
+* 📊 Emit detailed events for analytics.
 
 ---
 
 ## 🧪 Tests
 
-> ⚠️ No test scripts added yet. Recommended tests:
+The project includes Foundry-based tests covering:
 
-* ✅ Swap between two tokens with mocked router.
-* ✅ Handle ERC20 approval and balance correctly.
-* ✅ Reverts if insufficient allowance or balance.
-* ✅ Validate event emission and return values.
-
-### Run Tests Against Arbitrum Fork
-
-All tests are executed against a local fork of the Arbitrum One network:
-
-```bash
-forge test -vvvv --fork-url https://arb1.arbitrum.io/rpc --match-test testSwapTokensCorrectly
-```
-
----
-
-## 📊 Test Coverage
-
-Generate coverage report using Arbitrum fork:
-
-```bash
-forge coverage --fork-url https://arb1.arbitrum.io/rpc
-```
+* ✅ Token swap execution and balance changes.
+* ✅ Adding liquidity and verifying LP token balances.
+* ✅ Removing liquidity and receiving underlying tokens.
 
 ---
 
@@ -135,4 +105,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ---
 
-### 🚀 SwapApp: A minimal and safe way to integrate Uniswap swaps on-chain.
+### 🚀 SwapApp: Uniswap-powered token swap and liquidity management in Solidity.
